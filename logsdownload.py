@@ -30,6 +30,9 @@ def get_filelist(remote_path):
     stdin,stdout,stderr = s.exec_command('ls ' + remote_path)
     filelist=stdout.read()
     s.close()
+#    for i in filelist:
+#        print i
+#        time.sleep(5)
     return filelist
 
 def upload_files(local_dir, remote_path):
@@ -156,7 +159,7 @@ def check_localdir():
     if(0 !=len(files)):
         need_fflash = raw_input("There are old logs, do we need to fflash? Y/N ")
         if(need_fflash.lower() == 'y'):
-            a,b=commands.getstatusoutput('sudo rm -fr /root/bug/logs/*')
+            a,b=commands.getstatusoutput('sudo rm -fr *.*')
             if(0 == a):
                 print 'sucessfully fflush!'
             else:
@@ -185,6 +188,7 @@ def accept(browser):
 def download(bugnum):
     global local_dir
     global remote_dir
+    global sr_num
 #    sr_pre = 'SR='
     filename_pre = 'FileName='
     login = 'https://login.oracle.com/mysso/signon.jsp'
@@ -208,7 +212,6 @@ def download(bugnum):
             my_login(browser)
             sr_get(browser)
             path=get_path(browser)
-            global sr_num
             print 'SR is : ' + sr_num
             result = my_mkdirs(sr_num)
             currentW=browser.current_window_handle
@@ -244,17 +247,17 @@ def download(bugnum):
                         browser.switch_to.window(currentW)
                         """
             else:
-                //TODO getfilelist should be put out the loop
+                remote_path = remote_dir + sr_num
+                filelist = get_filelist(remote_path)
+                print filelist
                 for i in path:
                     href = i.get_attribute('href')
                     href_len = len(href)
                     filename_begin = href.find(filename_pre, 0, href_len)
                     filename_end = href.find('&', filename_begin+1, href_len)
                     filename=href[filename_begin+9:filename_end]
+                    print filename
                     #remote list
-                    global sr_num
-                    remote_path = remote_dir + sr_num
-                    filelist = get_filelist(remote_path)
                     if (-1 == filelist.find(filename, 0, len(filelist))):
                         i.click()
                        #wget.download(i)
@@ -344,8 +347,8 @@ def upload(bugnum):
 sr_num=""
 forced=False
 forceu=False
-remote_dir='/home/pteam2/SR_logs/'
-#remote_dir='/var/issues/'
+#remote_dir='/home/pteam2/SR_logs/'
+remote_dir='/var/issues/'
 local_dir='/home/east/bug/logs/'
 
 def main():
